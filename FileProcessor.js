@@ -66,7 +66,7 @@ module.exports.define("process", function (session) {
                 break;
             }
             if (this.stop_at_error && this.session
-                    && this.session.messages.error_recorded_since_clear) {
+                    && this.session.messages.error_recorded) {
                 this.throwError("stopping due to error");
             }
             line = this.readLine();
@@ -237,7 +237,7 @@ module.exports.define("performAmends", function () {
         prop;
 
     for (i = 0; i < this.amends.length; i += 1) {
-        if (this.stop_at_error && this.session.messages.error_recorded_since_clear) {
+        if (this.stop_at_error && this.session.messages.error_recorded) {
             if (this.trans) {
                 this.trans.cancel();
             }

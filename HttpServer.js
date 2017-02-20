@@ -255,16 +255,12 @@ module.exports.define("createSession", function (request, user_id, chameleon_id)
         user_agent: String(request.getHeader("User-Agent")),
         rsl_lb_server: String(request.getAttribute("RSL_LB_SERVER")),
         chameleon: chameleon_id,
+        http_session: http_session,
         online: true,
     });
 
     http_session.setAttribute("js_session", js_session);
-    // if (js_session.ping_mechanism) {
-    //     http_session.setMaxInactiveInterval(60 * 30);            // seconds - TODO revert to 60s
-    // } else {
     http_session.setMaxInactiveInterval(js_session.max_inactive_interval);     // seconds
-    // }
-    js_session.http_session = http_session;
     return js_session;
 });
 
@@ -314,31 +310,34 @@ module.exports.define("exchange", function (request, response) {
 
     try {
         if (!params.page_id) {
-            throw {             // eslint-disable-line no-throw-literal
+            module.exports.throwError({
                 http_status: 417,
-                message: "required 'page_id' parameter not supplied",
-            };
+                log_level: module.exports.log_levels.debug,
+                text: "required 'page_id' parameter not supplied",
+            });
         }
         if (!js_session && params.guest_id) {
             if (params.guest_id.indexOf("guest") !== 0) {
-                throw {             // eslint-disable-line no-throw-literal
+                module.exports.throwError({
                     http_status: 417,
-                    message: "invalid guest account",
-                };          // new Error("guest account id must begin with 'guest': " + guest_id);
+                    log_level: module.exports.log_levels.debug,
+                    text: "invalid guest account",
+                });          // new Error("guest account id must begin with 'guest': " + guest_id);
             }
             js_session = module.exports.createSession(request, params.guest_id, null);
         }
         if (!js_session) {
-            throw {             // eslint-disable-line no-throw-literal
+            module.exports.throwError({
                 http_status: 401,
-                message: "no session object",
-            };              // unauthorized
+                log_level: module.exports.log_levels.debug,
+                text: "no session object",
+            });              // unauthorized
         }
         params.visit_start_time = (new Date()).getTime().toFixed(0);
         if (params.one_time_lock_code) {
             js_session.one_time_lock_code = params.one_time_lock_code;
         }
-        module.exports.debug("    js_session: " + js_session.id + ", parameters: " + Core.Base.view(params));
+        module.exports.debug("    js_session: " + js_session.id + ", parameters: " + Core.Base.view.call(params));
         js_session.datetime_of_last_post = (new Date()).getTime();
         js_session.pings_since_last_post = 0;
 
@@ -363,10 +362,10 @@ module.exports.define("exchange", function (request, response) {
         }
         xmlstream.close();
     } catch (e1) {
-        module.exports.report(e1);
+        module.exports.report(e1, e1.log_level);
         json_obj = {};
         json_obj.http_status = e1.http_status || 500;
-        json_obj.http_message = e1.message || "A system error has occurred, please contact support";
+        json_obj.http_message = e1.text || "A system error has occurred, please contact support";
     }
 //    response.setContentType("application/json;charset=UTF-8");
     response.setHeader("X-Response-Message", json_obj.http_message);
