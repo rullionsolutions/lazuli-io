@@ -198,17 +198,6 @@ module.exports.define("escape", function (str) {
 });
 
 
-/* TODO
-build an XmlStream object from a parsed document
-module.exports.define("parse", function (xml_string) {
-    var Parser = Packages.org.jsoup.parser.Parser,
-        Jsoup  = Packages.org.jsoup.Jsoup;
-
-    return JSoup.parse(xml_string, "", Parser.xmlParser());
-});
-*/
-
-
 // jQuery mirror functions...
 
 /**
@@ -256,7 +245,7 @@ module.exports.define("empty", function () {
 * String text to add as child content
 * @return XmlStream child where we are adding the text
 */
-module.exports.define("text", function (text, valid_xml_content) {
+module.exports.define("text", function (text, output_unescaped_tags, bypass_jsoup_escape) {
     this.checkInvalidState(2);          // check not closed
     if (typeof text !== "string") {
         this.throwError("invalid argument");
@@ -271,10 +260,12 @@ module.exports.define("text", function (text, valid_xml_content) {
     }
 
     // apply whitelist to outgoing values
-    text = IO.JSoup.escape(text, this.JSoup_output_settings);
+    if (!bypass_jsoup_escape) {
+        text = IO.JSoup.escape(text, this.JSoup_output_settings);
+    }
 
-    text = text.replace(this.left_bracket_regex, (!valid_xml_content ? "&lt;" : "<"))
-               .replace(this.right_bracket_regex, (!valid_xml_content ? "&gt;" : ">"));
+    text = text.replace(this.left_bracket_regex, (!output_unescaped_tags ? "&lt;" : "<"))
+               .replace(this.right_bracket_regex, (!output_unescaped_tags ? "&gt;" : ">"));
 
     this.print(text);
     return this;                // allow cascade

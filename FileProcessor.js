@@ -186,7 +186,7 @@ module.exports.define("checkAmends", function (loaded_records, entity_id, id, ma
         map_part;
 
     try {
-        Entity.getEntity(entity_id).checkKey(id);
+        Data.entities.getThrowIfUnrecognized(entity_id).checkKey(id);
     } catch (e1) {
         this.session.messages.add({ type: 'W', text: "Invalid key: " + id + ", skipping" });
         return;

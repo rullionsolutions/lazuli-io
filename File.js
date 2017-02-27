@@ -143,14 +143,18 @@ module.exports.define("copy", function (to, from) {
 
 
 module.exports.define("getReader", function () {
-    return new java.io.BufferedReader(new java.io.InputStreamReader(this.getInputStream(),
-        this.encoding));
+    if (!this.reader) {
+        this.reader = new java.io.BufferedReader(
+            new java.io.InputStreamReader(this.getInputStream(),
+            this.encoding));
+    }
+    return this.reader;
 });
 
 
 module.exports.define("getInputStream", function () {
     if (this.file_id) {
-        return Data.Entity.getEntity("ac_file").getRow(this.file_id).getInputStream();
+        return Data.entities.get("ac_file").getRow(this.file_id).getInputStream();
     }
     if (!this.isSpecificFile()) {
         this.throwError("must be a specific file");

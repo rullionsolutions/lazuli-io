@@ -56,3 +56,15 @@ module.exports.define("removeTags", function (str) {
     ));
     return str.replace(/&amp;/g, "&");
 });
+
+
+module.exports.define("parse", function (xml_string) {
+    var Parser = Packages.org.jsoup.parser.Parser;
+    var Jsoup = Packages.org.jsoup.Jsoup;
+    return Jsoup.parse(xml_string, "", Parser.xmlParser());
+});
+
+
+module.exports.define("clean", function (str) {
+    return Packages.org.jsoup.Jsoup.clean(str, Packages.org.jsoup.safety.Whitelist.none());
+});
