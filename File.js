@@ -228,3 +228,19 @@ module.exports.define("unzip", function (zipfile, target_dir) {
     }
     zip.close();
 });
+
+module.exports.define("realReadFile", function (file_path) {
+    var java_scanner;
+    var java_file;
+    var content;
+
+    java_file = new java.io.File(file_path);
+    java_scanner = new java.util.Scanner(java_file, "UTF-8").useDelimiter("\\Z");
+    content = String(java_scanner.next());
+
+    try {
+        java_scanner.close();
+    } catch (ignore) {}
+
+    return content;
+});
