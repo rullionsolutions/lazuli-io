@@ -46,15 +46,17 @@ module.exports.define("unescape", function (str) {
 
 
 module.exports.define("removeTags", function (str) {
-    str = String(Packages.org.jsoup.Jsoup.clean(str,
-            "",
+    str = String(Packages.org.jsoup.Jsoup.clean(str, "",
             Packages.org.jsoup.safety.Whitelist.none(),
             new Packages.org.jsoup.nodes.Document.OutputSettings()
             .prettyPrint(true)
             .charset("ASCII")
             .escapeMode(Packages.org.jsoup.nodes.Entities.EscapeMode.xhtml)
     ));
-    return str.replace(/&amp;/g, "&");
+    return str.replace(/&#xa3;/g, "£")
+        .replace(/&pound;/g, "£")
+        .replace(/&#x26;/g, "&")
+        .replace(/&amp;/g, "&");
 });
 
 

@@ -430,6 +430,9 @@ module.exports.define("unisrch", function (request, response) {
     module.exports.debug("---");
     module.exports.info("--- unisrch()" + (js_session ? " on js_session " + js_session.id : "") + " ---");
     module.exports.debug("    parameters: " + Core.Base.view.call(params));
+    if (!js_session) {
+        module.exports.throwError("Not logged in");
+    }
     if (!params.q) {
         module.exports.throwError("No query string specified");
     }
