@@ -41,7 +41,7 @@ module.exports.define("getPath", function (path) {
 
 module.exports.define("getModulePath", function (module_arg) {
     var java_file = new java.io.File(new java.net.URL(module_arg.uri).getPath());
-    return String(java_file.getParentFile().getParentFile().getCanonicalPath());
+    return String(java_file.getParentFile().getCanonicalPath());
 });
 
 
