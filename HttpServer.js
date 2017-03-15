@@ -521,3 +521,36 @@ module.exports.define("crawlerHit", function (request, response) {
     response.setStatus(403);        // forbidden
 });
 
+module.exports.define("renderEmailPreview", function (request, response) {
+    var js_session = request.getSession(false).getAttribute("js_session");
+    var params = module.exports.collectHttpParametersFromJava(request);
+    var page;
+
+    module.exports.debug("---");
+    module.exports.info(
+        "--- renderEmailPreview()" + (js_session ? " on js_session " + js_session.id : "") +
+        ", page: " + params.page_id + (params.page_key ? ":" + params.page_key : "") + " ---"
+    );
+    if (!js_session) {
+        module.exports.throwError({
+            id: "not_logged_in",
+            text: "Not logged in",
+        });
+    }
+    if (!params.page_id) {
+        module.exports.throwError({
+            id: "missing_page_id",
+            text: "Parameter 'page_id' must be supplied",
+        });
+    }
+    if (params.page_id !== "ac_email_display") {
+        module.exports.throwError({
+            id: "wrong_page",
+            text: "Page id must be ac_email_display",
+        });
+    }
+    // seconds to allow resource to be cached for, -1 means DON'T CACHE
+    module.exports.setCacheHeaders(response, -1);
+    page = js_session.getPage(params.page_id, params.page_key);
+    response.getWriter().println(page.getPrimaryRow().getBodyWithImagesEmbedded());
+});
