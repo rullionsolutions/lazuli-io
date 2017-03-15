@@ -13,6 +13,10 @@ module.exports = IO.File.clone({
 });
 
 
+module.exports.register("start");
+module.exports.register("end");
+
+
 module.exports.override("clone", function (spec) {
     return IO.File.clone.call(this, spec);
 });
@@ -23,6 +27,7 @@ module.exports.override("clone", function (spec) {
 */
 module.exports.define("start", function () {
     this.debug("start");
+    this.happen("start");
 });
 
 
@@ -31,6 +36,7 @@ module.exports.define("start", function () {
 */
 module.exports.define("end", function () {
     this.debug("end");
+    this.happen("end");
     if (this.session) {
         this.info(this.session.messages.getString());
     }
@@ -83,6 +89,7 @@ module.exports.define("process", function (session) {
     } catch (ignore) {
         this.trace(ignore);
     }
+    this.reader = null;
     this.end();
     return this.line_nbr;
 });
@@ -166,136 +173,3 @@ module.exports.define("batchTransFinal", function () {
     this.batchTrans(true);
 });
 
-
-/**
-* It adds one amend object to the amends array and it logs the add in the session.messages
-* @param string action, string entity_id, string key, object map
-
-module.exports.define("addAmend", function (action, entity_id, key, map) {
-    this.amends.push({ action: action, entity_id: entity_id, key: key, map: map });
-    this.session.messages.add({ type: 'I',
-        text: "[" + action + "] " + entity_id + "[" + key + "] " + Parent.view.call(map) });
-});
-
-
-* @param object loaded_records, string entity_id, string id, object map, boolean allow_creates
-module.exports.define("checkAmends", function (loaded_records, entity_id, id, map, allow_creates) {
-    var data_obj,
-        field_id,
-        process = true,
-        map_part;
-
-    try {
-        Data.entities.getThrowIfUnrecognized(entity_id).checkKey(id);
-    } catch (e1) {
-        this.session.messages.add({ type: 'W', text: "Invalid key: " + id + ", skipping" });
-        return;
-    }
-    data_obj = loaded_records[id];
-
-    for (field_id in map) {
-        if (map.hasOwnProperty(field_id) && typeof map[field_id] !== "string") {
-            this.session.messages.add({ type: 'E', text: "Invalid " + field_id + ": " +
-                map[field_id] });
-            process = false;
-        }
-    }
-    if (!process) {
-        return;
-    }
-
-    if (data_obj) {
- //       delete loaded_records[id];
-        if (data_obj.processed) {
-            this.session.messages.add({ type: 'W', text: "Duplicate line for id " + id +
-                ", skipping" });
-            return;
-        }
-        data_obj.processed = true;
-        jslint nomen: true
-        for (field_id in map) {
-            if (map.hasOwnProperty(field_id) && map[field_id] !== data_obj[field_id]) {
-                map_part = {};
-                map_part[field_id] = map[field_id];
-                this.addAmend("U", entity_id, data_obj._key, map_part);
-            }
-        }
-   } else {
-       loaded_records[id] = { processed: true };
-       if (allow_creates) {
-           this.addAmend("C", entity_id, null, map);
-           loaded_records[id].created = true;
-       }
-   }
-});
-
-
-* It starts for each amend in the this.amends array the batchTransLoop
-module.exports.define("performAmends", function () {
-    var i,
-        row,
-        prop;
-
-    for (i = 0; i < this.amends.length; i += 1) {
-        if (this.stop_at_error && this.session.messages.error_recorded) {
-            if (this.trans) {
-                this.trans.cancel();
-            }
-            this.throwError("stopping due to error");
-        }
-        this.batchTransLoop();
-        if (this.amends[i].action === "C") {
-            row = this.trans.createNewRow(this.amends[i].entity_id);
-        } else {
-            row = this.trans.getActiveRow(this.amends[i].entity_id, this.amends[i].key);
-        }
-        if (this.amends[i].action === "D") {
-            row.setDelete(true);
-        } else {
-            for (prop in this.amends[i].map) {
-                if (this.amends[i].map.hasOwnProperty(prop) && prop !== "_key") {
-                    row.getField(prop).set(this.amends[i].map[prop]);
-                }
-            }
-            if (!row.isValid()) {
-                this.trans.removeRow(row);
-            }
-        }
-    }
-    this.batchTransFinal();
-});
-
-
-* It deactivates the amends that have not yet been processed and it adds a message in the
-    session.messages for each deactivated amend
-* @param object loaded_records, string entity_id
-module.exports.define("deactivateRemaining", function (loaded_records, entity_id) {
-    var id;
-
-    for (id in loaded_records) {
-        if (loaded_records.hasOwnProperty(id) && loaded_records[id].processed !== true) {
-            this.addAmend("U", entity_id, id, { status: "I" });
-            this.session.messages.add({ type: 'I', text: "No longer active: " + entity_id +
-                " [" + id + "]" });
-        }
-    }
-});
-
-
-* It add a message in the session.messages containing the count of amends  not yet processed
-* @param object loaded_records
-module.exports.define("reportRemaining", function (loaded_records) {
-    var id,
-        count = 0;
-
-    for (id in loaded_records) {
-        if (loaded_records.hasOwnProperty(id) && loaded_records[id].processed !== true) {
-    //        this.addAmend("D", "ad_cost_centre", id, {});
-    //        this.addMessage("No longer in data set: " + id);
-            count += 1;
-        }
-    }
-    this.session.messages.add({ type: 'I', text: "Number no longer in data set: " + count });
-});
-
-*/

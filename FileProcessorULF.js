@@ -12,57 +12,70 @@ module.exports = IO.FileProcessorCSV.clone({
 });
 
 
-module.exports.override("processLine", function (line_values) {
-    var sessions = {};
-    var params;
-    var line_nbr = 0;
-    var values;
-    var new_keys = [];
-    var out = {
+module.exports.defbind("resetCounters", "start", function () {
+    this.sessions = {};
+    if (this.session) {
+        this.sessions[this.session.user_id] = this.session;
+    }
+    this.params = null;
+    this.new_keys = [];
+    this.counters = {
         page_saved: 0,
         page_error: 0,
         page_fail: 0,
     };
+});
 
+
+module.exports.override("processLine", function (line_values) {
+    var values;
     if (line_values[0] === "P") {
-        params = line_values;
+        this.params = line_values;
     } else if (line_values[0] === "V") {
-        if (!params) {
-            this.throwError("No P row supplied before first V row at line " + line_nbr);
+        if (!this.params) {
+            this.throwError("No P row supplied before first V row at line " + this.line_nbr);
         }
-        values = this.mapCSVLine(params, line_values);
-        this.mapNewKeyValues(values, new_keys, line_nbr);
-        if (values.user_id && !sessions[values.user_id]) {
-            sessions[values.user_id] = Access.Session.clone({ user_id: values.user_id, });
-            if (!out.first_session) {
-                out.first_session = sessions[values.user_id];
-            }
+        values = this.mapCSVLine(this.params, line_values);
+        this.mapNewKeyValues(values);
+        if (values.user_id && !this.sessions[values.user_id]) {
+            this.sessions[values.user_id] = Access.Session.clone({ user_id: values.user_id, });
         }
         if (values.user_id && values.page_id) {
-            new_keys[line_nbr] = this.execPage(sessions[values.user_id], values, line_nbr,
-                out);
-            this.debug("Setting {key:" + line_nbr + "} to " + new_keys[line_nbr]);
+            this.new_keys[this.line_nbr] = this.execPage(this.sessions[values.user_id], values);
+            this.debug("Setting {key:" + this.line_nbr + "} to " + this.new_keys[this.line_nbr]);
         }
     }
 });
 
 
-module.exports.define("mapNewKeyValues", function (values, new_keys, line_nbr) {
+module.exports.define("mapCSVLine", function (params, line_values) {
+    var values = {};
+    var i;
+    for (i = 0; i < params.length && i < line_values.length; i += 1) {
+        if (params[i]) {            // must be non-blank
+            values[params[i]] = line_values[i];
+        }
+    }
+    return values;
+});
+
+
+module.exports.define("mapNewKeyValues", function (values) {
     var that = this;
     var new_key_match = /\{key:([0-9]*)\}/g;
 
-    this.debug("new_keys: " + new_keys.toString());
+    this.debug("new_keys: " + this.new_keys.toString());
     Object.keys(values).forEach(function (param) {
         var new_key_result = new_key_match.exec(values[param]);
         if (new_key_result) {
             that.debug("new_key_result: " + new_key_result.toString());
         }
         if (new_key_result && new_key_result.length >= 2) {
-            if (!new_keys[parseInt(new_key_result[1], 10)]) {
-                that.throwError("Key mapping not found for: " + new_key_result[1] + " at line " + line_nbr);
+            if (!this.new_keys[parseInt(new_key_result[1], 10)]) {
+                that.throwError("Key mapping not found for: " + new_key_result[1] + " at line " + this.line_nbr);
             }
             values[param] = values[param].replace(new_key_match,
-                new_keys[parseInt(new_key_result[1], 10)]);
+                this.new_keys[parseInt(new_key_result[1], 10)]);
 //                        values[param] = new_key_result[1] +  + new_key_result[3];
             that.debug("Replacing {key} in param " + param + ", to give: " + values[param]);
         }
@@ -70,9 +83,11 @@ module.exports.define("mapNewKeyValues", function (values, new_keys, line_nbr) {
 });
 
 
-module.exports.define("execPage", function (session, values, line_nbr, counters) {
+module.exports.define("execPage", function (session, values) {
     var page;
     var page_key = null;
+    var visit_start_time = (new Date()).getTime().toFixed(0);
+
     try {
         page = session.getPage(values.page_id, values.page_key);
         page.getTrans().override_all_validations = this.override_all_validations; // C9475
@@ -85,22 +100,22 @@ module.exports.define("execPage", function (session, values, line_nbr, counters)
         if (page.active) {
             if (values.page_button === "save") {
                 page.cancel();
-                counters.page_error += 1;
+                this.counters.page_error += 1;
             }
         } else if (page.trans) {
             if (page.trans.saved) {
-                counters.page_saved += 1;
+                this.counters.page_saved += 1;
             } else {
-                counters.page_error += 1;
+                this.counters.page_error += 1;
             }
         }
     } catch (e) {
         this.report(e);
-        counters.page_fail += 1;
+        this.counters.page_fail += 1;
         session.messages.report(e);
     }
     if (!page) {
-        counters.page_fail += 1;
+        this.counters.page_fail += 1;
         session.messages.add({
             type: "E",
             text: "Session.getPage(" + values.page_id + ") returned null",
@@ -108,6 +123,8 @@ module.exports.define("execPage", function (session, values, line_nbr, counters)
     } else if (page.getPrimaryRow()) {
         page_key = page.getPrimaryRow().getKey();
     }
+    session.updateVisit(page && page.trans, parseInt(visit_start_time, 10));
+    session.messages.clear();
     return page_key;
 });
 
@@ -149,6 +166,16 @@ module.exports.define("addGridRow", function (page, values) {
         if (match && match.length > 1) {
             values[new_row.id_prefix + match[1]] = values[param_id];
             delete values[param_id];
+        }
+    });
+});
+
+
+module.exports.defbind("closeSessions", "end", function () {
+    var that = this;
+    Object.keys(this.sessions).forEach(function (session_id) {
+        if (session_id !== this.session.id) {
+            that.sessions[session_id].close();
         }
     });
 });
