@@ -10,19 +10,26 @@ relaxed whitelist:
     1) a, b, blockquote, br, caption, cite, code, col, colgroup, dd, dl, dt, em,
         h1, h2, h3, h4, h5, h6, i, img, li, ol, p, pre, q, small, strike, strong, sub, sup, table,
         tbody, td, tfoot, th, thead, tr, u, ul
-    2) Enforces rel=nofollow on a tags    3) class and id attributes allowed
+    2) Enforces rel=nofollow on a tags
+    3) class and id attributes allowed
 */
 
 module.exports = Core.Base.clone({
     id: "JSoup",
 });
 
+// eslint-disable-next-line new-cap
+module.exports.wl_none = new Packages.org.jsoup.safety.Whitelist.none();
 
-module.exports.tag_whitelist =          // eslint-disable-next-line new-cap
-    new Packages.org.jsoup.safety.Whitelist.relaxed().addEnforcedAttribute("a", "rel", "nofollow");
-module.exports.tag_whitelist.addAttributes(":all", "class");
-module.exports.tag_whitelist.addAttributes(":all", "id");
-module.exports.JSoup_output_settings =
+// eslint-disable-next-line new-cap
+module.exports.wl_relaxed = new Packages.org.jsoup.safety.Whitelist.relaxed();
+module.exports.wl_relaxed.addEnforcedAttribute("a", "rel", "nofollow");
+module.exports.wl_relaxed.addAttributes(":all", "class");
+module.exports.wl_relaxed.addAttributes(":all", "id");
+module.exports.wl_relaxed.addAttributes("a", "href");
+module.exports.wl_relaxed.addAttributes("a", "target");
+
+module.exports.output_settings_notpretty =
     new Packages.org.jsoup.nodes.Document.OutputSettings().prettyPrint(false);
 
 
@@ -31,11 +38,9 @@ module.exports.override("clone", function () {
 });
 
 
-module.exports.define("escape", function (str, JSoup_output_settings) {
-    return String(Packages.org.jsoup.Jsoup.clean(str,
-            "",
-            this.tag_whitelist,
-            JSoup_output_settings || this.JSoup_output_settings
+module.exports.define("escape", function (str, output_settings) {
+    return String(Packages.org.jsoup.Jsoup.clean(str, "", this.wl_relaxed,
+            output_settings || this.output_settings_notpretty
     ));
 });
 
