@@ -180,11 +180,12 @@ module.exports.define("exec", function () {
         this.response.code = Number(connection.getResponseCode());
         this.response.body = this.collectResponseBody(connection);
         this.response.msg = String(connection.getResponseMessage());
+        this.debug(this.getURL() + " " + this.response.msg);
     } catch (e) {
         this.response.msg = e.toString();
+        this.error(this.getURL() + " " + this.response.msg);
     }
 
-    this.debug(this.url + " " + this.response.msg);
     this.response.end = new Date();
     return this.response;
 });
