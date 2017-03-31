@@ -191,7 +191,7 @@ module.exports.define("chameleonIn", function (request, response) {
         module.exports.info("--- chameleonIn() --- user: " + real_user_id + " is mimicking: " + mimic_user_id);
         js_session = module.exports.createSession(request, mimic_user_id, real_user_id);
         status_code = 303;
-        response.setHeader("Location", "../index.html?page_id=home");
+        response.setHeader("Location", "../index.html#page_id=home");
     }
     // seconds to allow resource to be cached for, -1 means DON'T CACHE
     module.exports.setCacheHeaders(response, -1);
@@ -217,7 +217,7 @@ module.exports.define("chameleonOut", function (request, response) {
         js_session = module.exports.createSession(request, js_session.chameleon);
         module.exports.info("--- chameleonOut() --- returning to: " + js_session.chameleon);
         status_code = 303;
-        response.setHeader("Location", "../index.html?page_id=home");
+        response.setHeader("Location", "../index.html#page_id=home");
     }
     // seconds to allow resource to be cached for, -1 means DON'T CACHE
     module.exports.setCacheHeaders(response, -1);
