@@ -371,13 +371,20 @@ module.exports.define("makeRadio", function (control, id, selected, css_class) {
 });
 
 
-module.exports.define("makeRadioLabelSpan", function (control, id, label, selected) {
-    var span_elmt = this.makeElement("span", "css_attr_item", control);
-    span_elmt.makeRadio(control, id, selected);
-    span_elmt.makeElement("label")
-        .attr("for", control + "." + id)
-        .text(label);
-    return span_elmt;
+module.exports.define("makeRadioWithLabel", function (control, id, label, selected, inline) {
+    var elmt;
+    if (inline) {
+        elmt = this.makeElement("label");
+        elmt.attr("class", "radio-inline");
+    } else {
+        elmt = this.makeElement("div");
+        elmt.attr("class", "radio");
+        elmt = elmt.makeElement("label");
+    }
+    // this.makeElement("span", "css_attr_item", control);
+    elmt.makeRadio(control, id, selected);
+    elmt.text(label);
+    return elmt;
 });
 
 
@@ -393,13 +400,21 @@ module.exports.define("makeCheckbox", function (control, id, checked, css_class)
 });
 
 
-module.exports.define("makeCheckboxLabelSpan", function (control, id, label, checked) {
-    var span_elmt = this.makeElement("span", "css_attr_item", control);
-    span_elmt.makeCheckbox(control, id, checked);
-    span_elmt.makeElement("label")
-        .attr("for", control + "." + id)
-        .text(label);
-    return span_elmt;
+module.exports.define("makeCheckboxWithLabel", function (control, id, label, checked, inline) {
+    var elmt;
+    if (inline) {
+        elmt = this.makeElement("label");
+        elmt.attr("class", "checkbox-inline");
+    } else {
+        elmt = this.makeElement("div");
+        elmt.attr("class", "checkbox");
+        elmt = elmt.makeElement("label");
+    }
+
+    // this.makeElement("span", "css_attr_item", control);
+    elmt.makeCheckbox(control, id, checked);
+    elmt.text(label);
+    return elmt;
 });
 
 
