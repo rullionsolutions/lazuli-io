@@ -451,7 +451,7 @@ module.exports.define("makeDropdownUL", function (control, right_align) {
 
 
 module.exports.define("makeDropdownButton", function (control, label, url, tooltip, css_class, right_align) {
-    var elmt = this.makeElement("button", (css_class || "") + " dropdown-toggle btn", control);
+    var elmt = this.makeElement("button", (css_class || "btn-default") + " dropdown-toggle btn", control);
     elmt.attr("type", "button");
     elmt.attr("role", "button");
     elmt.attr("data-toggle", "dropdown");
