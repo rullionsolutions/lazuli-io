@@ -72,9 +72,9 @@ module.exports.define("addChartSupport", function (target) {
     ];
 
     for (file_id = 0; file_id < files.length; file_id += 1) {
-        js = target.addChild("script");
-        js.attribute("type", "text/javascript");
-        js.attribute("src", files[file_id]);
-        js.addText(" ");
+        js = target.makeElement("script");
+        js.attr("type", "text/javascript");
+        js.attr("src", files[file_id]);
+        js.text(" ");
     }
 });

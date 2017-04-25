@@ -55,8 +55,8 @@ module.exports.define("renderPDF", function (request, response) {
         indent: null,
     });
 
-    head = xmlstream.addChild("head");
-    head.addChild("meta").attribute("charset", "UTF-8");
+    head = xmlstream.makeElement("head");
+    head.makeElement("meta").attr("charset", "UTF-8");
 
     exec = Rhino.app.webapps_dir + "cdn/phantomjs-1.9.7/phantomjs-1.9.7";
     if (Rhino.app.isWindows()) {
@@ -73,12 +73,12 @@ module.exports.define("renderPDF", function (request, response) {
         }
     });
 
-    body = xmlstream.addChild("body");
-    div = body.addChild("div", "css_page_print");
+    body = xmlstream.makeElement("body");
+    div = body.makeElement("div", null, "css_page_print");
     if (!page.ignore_print_header) {
-        div.addChild("h1", null, null, page.getPageTitle());
-        div.addChild("p", null, null, "PDF View at " + (new Date()).toString());
-        div.addChild("p", null, null, "Source " + Rhino.app.base_uri + "/" + page.getSimpleURL());
+        div.makeElement("h1").text(page.getPageTitle());
+        div.makeElement("p").text("PDF View at " + (new Date()).toString());
+        div.makeElement("p").text("Source " + Rhino.app.base_uri + "/" + page.getSimpleURL());
     }
     page.render(div, {
         all_sections: true,
@@ -89,12 +89,13 @@ module.exports.define("renderPDF", function (request, response) {
         long_lists: true,
     });
     if (!page.ignore_print_footer) {
-        div.addChild("p", null, null, "End of Print");
+        div.makeElement("p").text("End of Print");
     }
     xmlstream.close();
 
     out.close();
-    exec_process = java.lang.Runtime.getRuntime().exec(exec + " " + tmp_html.getAbsolutePath() + " " + tmp_pdf.getAbsolutePath());
+    exec_process = java.lang.Runtime.getRuntime().exec(exec + " " +
+        tmp_html.getAbsolutePath() + " " + tmp_pdf.getAbsolutePath());
 
     // required otherwise the waitFor stucks
     inn = new java.io.BufferedReader(new java.io.InputStreamReader(exec_process.getInputStream()));
@@ -133,5 +134,5 @@ module.exports.define("addInternalCSS", function (target, css_path) {
     reader = new java.io.BufferedReader(new java.io.FileReader(css_path));
     while (getLine());
     reader.close();
-    target.addChild("style").addText(css_text);
+    target.makeElement("style").text(css_text);
 });

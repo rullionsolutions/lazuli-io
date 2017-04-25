@@ -248,7 +248,7 @@ module.exports.define("createSession", function (request, user_id, chameleon_id)
     var http_session = request.getSession(true);
 
     module.exports.info("--- createSession(" + user_id + ", " + chameleon_id + ") ---");
-    js_session = Access.Session.clone({
+    js_session = Access.Session.getNewSession({
         user_id: user_id,
         user_agent: String(request.getHeader("User-Agent")),
         rsl_lb_server: String(request.getAttribute("RSL_LB_SERVER")),

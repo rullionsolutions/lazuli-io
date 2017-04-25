@@ -38,7 +38,7 @@ module.exports.override("processLine", function (line_values) {
         values = this.mapCSVLine(this.params, line_values);
         this.mapNewKeyValues(values);
         if (values.user_id && !this.sessions[values.user_id]) {
-            this.sessions[values.user_id] = Access.Session.clone({ user_id: values.user_id, });
+            this.sessions[values.user_id] = Access.Session.getNewSession({ user_id: values.user_id, });
         }
         if (values.user_id && values.page_id) {
             this.new_keys[this.line_nbr] = this.execPage(this.sessions[values.user_id], values);

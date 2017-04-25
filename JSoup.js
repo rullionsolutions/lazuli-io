@@ -45,6 +45,7 @@ module.exports.define("escape", function (str, output_settings) {
 });
 
 
+// converts all HTML entities to ordinary chars, e.g. &amp; -> &, &lt; -> <, &gt; -> >, etc
 module.exports.define("unescape", function (str) {
     return String(Packages.org.jsoup.parser.Parser.unescapeEntities(str, false));
 });
