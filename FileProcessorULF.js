@@ -29,6 +29,9 @@ module.exports.defbind("resetCounters", "start", function () {
 
 module.exports.override("processLine", function (line_values) {
     var values;
+    this.info("Line: " + this.line_nbr + ", line_values[0-4]: " + line_values[0] + ", " +
+        line_values[1] + ", " + line_values[2] + ", " + line_values[3] + ", " + line_values[4]);
+
     if (line_values[0] === "P") {
         this.params = line_values;
     } else if (line_values[0] === "V") {
@@ -38,7 +41,9 @@ module.exports.override("processLine", function (line_values) {
         values = this.mapCSVLine(this.params, line_values);
         this.mapNewKeyValues(values);
         if (values.user_id && !this.sessions[values.user_id]) {
-            this.sessions[values.user_id] = Access.Session.getNewSession({ user_id: values.user_id, });
+            this.sessions[values.user_id] = Access.Session.getNewSession({
+                user_id: values.user_id,
+            });
         }
         if (values.user_id && values.page_id) {
             this.new_keys[this.line_nbr] = this.execPage(this.sessions[values.user_id], values);
@@ -154,6 +159,7 @@ module.exports.define("substituteCurrentPrimaryKey", function (page, values) {
 module.exports.define("addGridRow", function (page, values) {
     var section_id = values.page_button.substr(9);
     var section = page.sections.get(section_id);
+    var regex = new RegExp("^" + section.id + "_\\{grid_id\\}(.*)$");
     var new_row;
     if (!section) {
         this.throwError("unrecognized section id: " + section_id);
@@ -162,7 +168,8 @@ module.exports.define("addGridRow", function (page, values) {
     delete values["add_row_field_" + section.id];
     delete values.page_button;
     Object.keys(values).forEach(function (param_id) {
-        var match = param_id.match(/^\{grid_id\}(.*)$/);
+        var match = regex.exec(param_id);
+        section.trace("addGridRow() map param: " + param_id + ", " + match);
         if (match && match.length > 1) {
             values[new_row.id_prefix + match[1]] = values[param_id];
             delete values[param_id];
@@ -173,9 +180,9 @@ module.exports.define("addGridRow", function (page, values) {
 
 module.exports.defbind("closeSessions", "end", function () {
     var that = this;
-    Object.keys(this.sessions).forEach(function (session_id) {
-        if (session_id !== this.session.id) {
-            that.sessions[session_id].close();
+    Object.keys(this.sessions).forEach(function (user_id) {
+        if (that.sessions[user_id] !== that.session) {
+            that.sessions[user_id].close();
         }
     });
 });
