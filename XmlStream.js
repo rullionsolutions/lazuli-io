@@ -297,15 +297,27 @@ module.exports.define("makeElement", function (tag, css_class, id) {
 */
 
 module.exports.define("makeElement", function (name, css_class, id) {
-    var elmt;
-    elmt = this.addChild(name, id, css_class);
+    this.checkInvalidState(2);          // check not closed
+    if (this.state === 0) {
+        this.open();
+        this.print(">");
+    }
+    if (this.curr_child) {
+        this.curr_child.close();
+    }
+    this.curr_child = this.clone({
+        id: name,
+        parent: this,
+        name: name,
+        level: this.level + 1,
+    });
     if (css_class) {
-        elmt.attr("class", css_class);
+        this.curr_child.attr("class", css_class);
     }
     if (id) {
-        elmt.attr("id", id);
+        this.curr_child.attr("id", id);
     }
-    return elmt;
+    return this.curr_child;
 });
 
 
