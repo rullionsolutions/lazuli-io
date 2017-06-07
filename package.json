@@ -13,6 +13,6 @@
   "author": "stephen.d.francis@gmail.com",
   "license": "Apache-2.0",
   "dependencies": {
-    "lapis-core": "rullionsolutions/lapis-core#npm-test"
+    "lapis-core": "git+ssh://git@github.com:rullionsolutions/lapis-core#npm-test"
   }
 }
