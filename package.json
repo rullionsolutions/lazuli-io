@@ -1,6 +1,6 @@
 {
   "name": "lazuli-io",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Data input/output functionality",
   "main": "index.js",
   "scripts": {
@@ -13,6 +13,6 @@
   "author": "stephen.d.francis@gmail.com",
   "license": "Apache-2.0",
   "dependencies": {
-    "lapis-core": "git+ssh://git@github.com:rullionsolutions/lapis-core#C13336-oth-npm-management"
+    "lapis-core": "git+ssh://git@github.com:rullionsolutions/lapis-core#1.0.0"
   }
 }
