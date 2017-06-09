@@ -355,8 +355,12 @@ module.exports.define("exchange", function (request, response) {
             // TODO better way to link session and trans...
             if (page.trans && js_session.messages) {
                 js_session.messages.trans = page.trans;
+                page.trans.messages.include_field_messages = false;
             }
             js_session.render(xmlstream, render_opts);
+            if (page.trans && js_session.messages) {
+                page.trans.messages.include_field_messages = true;
+            }
         }
         xmlstream.close();
     } catch (e1) {
