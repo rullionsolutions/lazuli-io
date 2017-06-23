@@ -83,8 +83,22 @@ module.exports.define("solo", function (obj, funct_id, render_opts) {
 
 module.exports.define("checkInvalidState", function (invalid_state) {
     if (this.state === invalid_state) {
-        this.throwError("xmlstream invalid state: " + invalid_state);
+        this.throwError("xmlstream invalid state: " + invalid_state + " at " + this.getAncestorWithDifferentState());
     }
+});
+
+
+module.exports.define("getAncestorWithDifferentState", function (state_to_find) {
+    if (!state_to_find) {
+        state_to_find = this.state;
+    }
+    if (state_to_find !== this.state) {
+        return this;
+    }
+    if (this.parent) {
+        return this.parent.getAncestorWithDifferentState(state_to_find);
+    }
+    return null;
 });
 
 
