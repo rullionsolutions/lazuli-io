@@ -345,6 +345,7 @@ module.exports.define("exchange", function (request, response) {
             name: "div",
             out: response.getWriter(),
             indent: null,
+            line_separator: "\n",
         });
         xmlstream.attribute("id", "css_page_normal");
         page = js_session.getPage(params.page_id, params.page_key);
