@@ -1,6 +1,6 @@
 {
   "name": "lazuli-io",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Data input/output functionality",
   "main": "index.js",
   "scripts": {
